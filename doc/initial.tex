@@ -1,0 +1,91 @@
+\documentclass{article}
+\usepackage[polish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\let\lll\undefined
+\usepackage{amssymb}
+\usepackage{amsmath}
+\setcounter{tocdepth}{3}
+\usepackage{graphicx}
+\usepackage{secdot}
+\sectiondot{subsection}
+\usepackage[parfill]{parskip}
+
+\usepackage{url}
+\newcommand{\keywords}[1]{\par\addvspace\baselineskip
+\noindent\keywordname\enspace\ignorespaces#1}
+
+\title{Specyfikacja projektu ALHE}
+\author{Ahata Valiukevich, Łukasz Wlazły}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+W ramach projektu należało przeanalizować temat sieci autostrad i sformułować na jego podstawie zadanie optymalizacji.
+\end{abstract}
+
+\section{Ogólny opis problemu}
+\subsection{Treść zadania}
+Przygotować algorytm poszukujący optymalnej sieci autostrad tworzącą siatkę połączeń pomiędzy miastami z danego zbioru - położenia miast są nam znane. Rozwiązanie powinno uwzględniać miejsca zjazdów (nie mogą one znajdować się zbyt blisko siebie) oraz pozwalać na przecinanie się autostrad nie tylko w miastach.
+\subsection{Założenia wstępne}
+\begin{itemize}
+\item Płaszczyzna - to przestrzeń $\mathbb{Z}^{2}$.
+\item Miasto - punkt na płaszczyźnie. Liczba miast $M$ oraz ich współrzędne są znane i niezmienne.
+\item Zjazd - najkrótszy odcinek łączący miasto z najbliższym fragmentem autostrady.
+\item Autostrada - łamana opisana za pomocą $2M$ punktów. Rozwiązania, które nie zapewniają połączenia wszystkich miast ze sobą, zostaną odrzucone.
+\end{itemize}
+
+\section{Przestrzeń przeszukiwań i sąsiedztwo}
+Przestrzenią przeszukiwań są $2M$-elementowe wektory krotek postaci $[x, y, c]$, gdzie $(x, y)$ - to współrzędne wierzchołka łamanej, a $c$ - zmienna binarna, mówiąca, czy istenieje połączenie pomiędzy poprzednim a aktualnym wierzchołkiem. Wektor krotek będzie rozważany jako lista cykliczna, tj. wartość $c$ w pierwszej krotce mówi, czy istnieje połączenie z punktem opisanym w ostatniej krotce.\\
+Sąsiadami $k$-tego stopnia w zadanej przestrzeni przeszukiwań będziemy nazywać dwa wektory różniące się $k$ krotkami.
+
+\section{Funkcja celu}
+\subsection{Sposób obliczania}
+Na wartość funkcji celu wpływ będą miały następujące parametry:
+\begin{itemize}
+\item położenie miast
+\item położenie autostrad
+\item koszt jednego kilometra autostrady;
+\item koszt jednego kilometra zjazdu.
+\end{itemize}
+Koszt autostrady będzie opisany za pomocą funkcji liniowej, natomiast koszt każdego zjazdu zostanie wyrażony w postaci funkcji oferującej znacznie wyższy wzrost - wielomianowej lub wykładniczej - co zapewni występowanie krótkich i nieczęsto występujących zjazdów. Wartość funkcji celu będzie sumą kosztu autostrad i zjazdów. Optymalizacja będzie polegała na minimalizacji sumarycznego kosztu sieci autostrad.
+
+\subsection{Wzór funkcji celu}
+Niech $i$ będzie indeksem krotki w wektorze, $k$ będzie numerem miasta, a $p_k$ i $r_k$ współrzędnymi $k$-tego miasta. Załóżmy też, że wartości logiczne \texttt{true} oraz \texttt{false} odpowiadają wartościom $1$ oraz $0$. Funkcję celu definiujemy wówczas jako:
+\begin{align*}
+\sum_{i = 0}^{M} c_i((x_i - x_{i-1})^2 + (y_i - y_{i-1})^2) + \sum_{k = 1}^{M} 2^{f(p_k, r_k)} - 1
+\end{align*}
+gdzie $f(p_k, r_k)$ jest funkcją obliczającą odległość miasta od autostrady.
+
+\subsection{Przykład}
+Niech $M$ będzie liczbą miast, $C$ zbiorem punktów z przestrzeni $\mathbb{Z}^{2}$ opisujących położenie miast, a $A$ wektorem krotek opisującym budowę autostrady. Załóżmy także, że $f(z)$ jest funkcją kosztu autostrady w zależności od jej długości, a $g(w)$ funkcją kosztu zjazdu zależną od jego długości. Przez $k(A, C)$ oznaczmy sumaryczną funkcję kosztu.\\
+
+Przyjmijmy następujące wartości:
+\begin{flalign*}
+& M = 3 &\\
+& C = \{(2, 2), (4, 8), (6, 6)\} &\\
+& A = \big[ (1, 4, F), (4, 4, T), (6, 4, T), (8, 4, T) \big] &\\
+& f(z) = z &\\
+& g(w) = 2^w - 1 &\\
+\end{flalign*}
+
+Łamana ma w tym przypadku długość $7$. \\
+Mamy także trzy zjazdy, prowadzące od każdego z miast, odpowiednio o długości: $2$, $4$ oraz $2$.
+Mając powyższe dane możemy obliczyć wartość funkcji celu:
+\begin{flalign*}
+& f(z) = f(7) = 7 & \\
+& g(w_1) = g(w_3) = 2^2 - 1 = 3 & \\
+& g(w_2) = 2^4 - 1 = 15 & \\
+& k(A, C) = 7 + 3 + 15 + 3 = 28
+\end{flalign*}
+
+\section{Metody optymalizacji}
+Planowane metody heurystyczne to przeszukiwanie ze zmiennym sąsiedztwem (VNS) oraz symulowane wyżarzanie.
+
+\section{Sposób przeprowadzania eksperymentów}
+\begin{enumerate}
+\item Początkowe testy zostaną przeprowadzone na relatywnie małych danych, co będzie umożliwiało porównanie z wynikami obliczonymi ręcznie oraz znalezienie ewentualnych błędów.
+\item Wyniki będą prezentowane na dwa sposoby: w formie tekstowej oraz graficznej.
+\item Testy sprawdzające wydajność metod optymalizacji zostaną przeprowadzone odpowiednio dla $M$ równego 10, 25 oraz 50.
+\end{enumerate}
+\end{document}
