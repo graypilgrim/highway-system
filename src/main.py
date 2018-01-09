@@ -30,3 +30,5 @@ print('final length: ' + str(length))
 
 slip_roads = hs.calculate_slip_roads_len()
 print('slip_roads: ' + str([i for i in slip_roads]))
+
+hs.is_valid()

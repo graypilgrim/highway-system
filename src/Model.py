@@ -1,6 +1,7 @@
 import random
 from math import sqrt
 from typing import NamedTuple
+import sys
 
 class Point(NamedTuple):
     x: int
@@ -13,6 +14,31 @@ class Segment(NamedTuple):
 class Vertex(NamedTuple):
     point: Point
     connection: bool
+
+class BoundingRectangle:
+    def __init__(self):
+        self.top_right = [-sys.maxsize-1, -sys.maxsize-1]
+        self.bottom_left = [sys.maxsize, sys.maxsize]
+
+    def is_in(self, segment):
+        if segment.a.x > top_right[0] or segment.a.x < bottom_left[0] and segment.b.x > top_right[0] or segment.b.x < bottom_left[0]:
+            return False
+
+        if segment.a.y > top_right[1] or segment.a.y < bottom_left[1] and segment.b.y > top_right[1] or segment.b.y < bottom_left[1]:
+            return False
+
+        return True
+
+    def add(self, segment):
+        self.top_right[0] = max(self.top_right[0], segment.a.x)
+        self.top_right[0] = max(self.top_right[0], segment.b.x)
+        self.top_right[1] = max(self.top_right[1], segment.a.x)
+        self.top_right[1] = max(self.top_right[1], segment.b.x)
+
+        self.bottom_left[0] = min(self.bottom_left[0], segment.a.x)
+        self.bottom_left[0] = min(self.bottom_left[0], segment.b.x)
+        self.bottom_left[1] = min(self.bottom_left[1], segment.a.x)
+        self.bottom_left[1] = min(self.bottom_left[1], segment.b.x)
 
 class HighwaySystem:
     def __init__(self, cities):
@@ -86,3 +112,27 @@ class HighwaySystem:
         point_image_y = segment_coefficient_a * point_image_x + segment_coefficient_b
 
         return self.point_to_point_distance(Point(point_image_x, point_image_y), point)
+
+    def is_valid(self):
+        rect = BoundingRectangle()
+        prev = self.highways[-1]
+        segments = set()
+        for elem in self.highways:
+            if elem.connection == False:
+                prev = elem
+                continue
+
+            segment = Segment(Point(prev.point.x, prev.point.y), Point(elem.point.x, elem.point.y))
+
+            if not rect.is_in(segment):
+                return False
+
+            if not self.is_intersection(segments, segment):
+                return False
+
+            segments.add(segment)
+            rect.add(segment)
+
+    def is_intersection(self, segments, segment):
+        # TODO: implementation
+        return True
