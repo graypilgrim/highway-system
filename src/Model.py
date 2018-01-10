@@ -21,10 +21,10 @@ class BoundingRectangle:
         self.bottom_left = [sys.maxsize, sys.maxsize]
 
     def is_in(self, segment):
-        if segment.a.x > top_right[0] or segment.a.x < bottom_left[0] and segment.b.x > top_right[0] or segment.b.x < bottom_left[0]:
+        if segment.a.x > self.top_right[0] or segment.a.x < self.bottom_left[0] and segment.b.x > self.top_right[0] or segment.b.x < self.bottom_left[0]:
             return False
 
-        if segment.a.y > top_right[1] or segment.a.y < bottom_left[1] and segment.b.y > top_right[1] or segment.b.y < bottom_left[1]:
+        if segment.a.y > self.top_right[1] or segment.a.y < self.bottom_left[1] and segment.b.y > self.top_right[1] or segment.b.y < self.bottom_left[1]:
             return False
 
         return True
@@ -100,7 +100,8 @@ class HighwaySystem:
             distance_b = self.point_to_point_distance(segment.b, point)
             return distance_a if distance_a < distance_b else distance_b
 
-        # TODO: case when 0 in denominators
+        if segment.b.x == segment.a.x:
+            return abs(segment.a.x - point.x)
 
         segment_coefficient_a = (segment.b.y - segment.a.y) / (segment.b.x - segment.a.x)
         segment_coefficient_b = (segment.b.x*segment.a.y - segment.a.x*segment.b.y)/(segment.b.x - segment.a.x)
@@ -133,6 +134,25 @@ class HighwaySystem:
             segments.add(segment)
             rect.add(segment)
 
-    def is_intersection(self, segments, segment):
-        # TODO: implementation
         return True
+
+    def is_intersection(self, segments, segment):
+        for seg in segments:
+
+            if seg.a.x == seg.b.x:
+                if segment.a.x <= seg.a.x and segment.b.x >= seg.a.x or segment.a.x > seg.a.x and segment.b.x < seg.a.x:
+                    return True
+
+            coefficient_a = (seg.b.y - seg.a.y) / (seg.b.x - seg.a.x)
+            coefficient_b = (seg.b.x*seg.a.y - seg.a.x*seg.b.y)/(seg.b.x - seg.a.x)
+
+            val_a = coefficient_a*segment.a.x + coefficient_b
+            val_b = coefficient_a*segment.b.x + coefficient_b
+
+            if segment.a.y > val_a and segment.b.y < val_b:
+                return True
+
+            if segment.a.y < val_a and segment.b.y > val_b:
+                return True
+
+        return False
