@@ -3,17 +3,21 @@ from math import sqrt
 from typing import NamedTuple
 import sys
 
+
 class Point(NamedTuple):
     x: int
     y: int
+
 
 class Segment(NamedTuple):
     a: Point
     b: Point
 
+
 class Vertex(NamedTuple):
     point: Point
     connection: bool
+
 
 class BoundingRectangle:
     def __init__(self):
@@ -39,6 +43,7 @@ class BoundingRectangle:
         self.bottom_left[0] = min(self.bottom_left[0], segment.b.x)
         self.bottom_left[1] = min(self.bottom_left[1], segment.a.x)
         self.bottom_left[1] = min(self.bottom_left[1], segment.b.x)
+
 
 class HighwaySystem:
     def __init__(self, cities):
@@ -156,3 +161,7 @@ class HighwaySystem:
                 return True
 
         return False
+
+    def quality(self, calculate_highways_len, calculate_slip_roads_len):
+        result = calculate_highways_len + 2^calculate_slip_roads_len - 1
+        return result
