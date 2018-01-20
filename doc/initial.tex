@@ -32,11 +32,11 @@ Przygotować algorytm poszukujący optymalnej sieci autostrad tworzącą siatkę
 \item Płaszczyzna - to przestrzeń $\mathbb{Z}^{2}$.
 \item Miasto - punkt na płaszczyźnie. Liczba miast $M$ oraz ich współrzędne są znane i niezmienne.
 \item Zjazd - najkrótszy odcinek łączący miasto z najbliższym fragmentem autostrady.
-\item Autostrada - łamana opisana za pomocą $2M$ punktów. Rozwiązania, które nie zapewniają połączenia wszystkich miast ze sobą, zostaną odrzucone.
+\item Autostrada - łamana opisana za pomocą $M$ punktów. Rozwiązania, które nie zapewniają połączenia wszystkich miast ze sobą, zostaną odrzucone.
 \end{itemize}
 
 \section{Przestrzeń przeszukiwań i sąsiedztwo}
-Przestrzenią przeszukiwań są $2M$-elementowe wektory krotek postaci $[x, y, c]$, gdzie $(x, y)$ - to współrzędne wierzchołka łamanej, a $c$ - zmienna binarna, mówiąca, czy istenieje połączenie pomiędzy poprzednim a aktualnym wierzchołkiem. Wektor krotek będzie rozważany jako lista cykliczna, tj. wartość $c$ w pierwszej krotce mówi, czy istnieje połączenie z punktem opisanym w ostatniej krotce.\\
+Przestrzenią przeszukiwań są $M$-elementowe wektory krotek postaci $[x, y, c]$, gdzie $(x, y)$ - to współrzędne wierzchołka łamanej, a $c$ - zmienna binarna, mówiąca, czy istenieje połączenie pomiędzy poprzednim a aktualnym wierzchołkiem. Wektor krotek będzie rozważany jako lista cykliczna, tj. wartość $c$ w pierwszej krotce mówi, czy istnieje połączenie z punktem opisanym w ostatniej krotce.\\
 Sąsiadami $k$-tego stopnia w zadanej przestrzeni przeszukiwań będziemy nazywać dwa wektory różniące się $k$ krotkami.
 
 \section{Funkcja celu}

@@ -56,7 +56,6 @@ class HighwaySystem:
                 res = min(distance, res)
                 prev = elem
 
-            print('slip road len: ' + str(res))
             yield res
 
     def point_to_point_distance(self, point_a, point_b):
@@ -85,7 +84,7 @@ class HighwaySystem:
             distance_b = self.point_to_point_distance(segment.b, point)
             return distance_a if distance_a < distance_b else distance_b
 
-        if segment.b.x == segment.a.x:
+        if segment.b.x == segment.a.x or segment.b.y == segment.a.y:
             return abs(segment.a.x - point.x)
 
         segment_coefficient_a = (segment.b.y - segment.a.y) / (segment.b.x - segment.a.x)
@@ -111,11 +110,9 @@ class HighwaySystem:
             segment = Segment(Point(prev.point.x, prev.point.y), Point(elem.point.x, elem.point.y))
 
             if not first and not self.is_intersection(segments, segment):
-                print('false')
                 first = False
                 return False
 
-            print('true')
             segments.add(segment)
 
         return True
@@ -123,8 +120,7 @@ class HighwaySystem:
     def is_intersection(self, segments, segment):
         for seg in segments:
             if seg.a.x == seg.b.x:
-                if segment.a.x <= seg.a.x and segment.b.x >= seg.a.x or segment.a.x > seg.a.x and segment.b.x < seg.a.x:
-                    return True
+                return False
 
             coefficient_a = (seg.b.y - seg.a.y) / (seg.b.x - seg.a.x)
             coefficient_b = (seg.b.x*seg.a.y - seg.a.x*seg.b.y)/(seg.b.x - seg.a.x)
@@ -145,8 +141,7 @@ class HighwaySystem:
         slip_roads_value = 0
         for i in slip_roads:
             slip_roads_value = slip_roads_value + 2**i + 1
-        result = self.calculate_highways_len() + slip_roads_value - 1
-        return result
+        return self.calculate_highways_len() + slip_roads_value
 
     def get_neighbourhood(self, radius):
         neighbourhood = list()
@@ -156,25 +151,25 @@ class HighwaySystem:
             c = self.highways[i].connection
 
             neighbour = list(self.highways)
-            neighbour[i] = Vertex(Point(x + 1, y), c)
+            neighbour[i] = Vertex(Point(x + radius, y), c)
             hs = HighwaySystem(self.cities, neighbour)
             if (hs.is_valid()):
                 neighbourhood.append(hs)
 
             neighbour = list(self.highways)
-            neighbour[i] = Vertex(Point(x - 1, y), c)
+            neighbour[i] = Vertex(Point(x - radius, y), c)
             hs = HighwaySystem(self.cities, neighbour)
             if (hs.is_valid()):
                 neighbourhood.append(hs)
 
             neighbour = list(self.highways)
-            neighbour[i] = Vertex(Point(x, y + 1), c)
+            neighbour[i] = Vertex(Point(x, y + radius), c)
             hs = HighwaySystem(self.cities, neighbour)
             if (hs.is_valid()):
                 neighbourhood.append(hs)
 
             neighbour = list(self.highways)
-            neighbour[i] = Vertex(Point(x, y - 1), c)
+            neighbour[i] = Vertex(Point(x, y - radius), c)
             hs = HighwaySystem(self.cities, neighbour)
             if (hs.is_valid()):
                 neighbourhood.append(hs)
@@ -188,4 +183,4 @@ class HighwaySystem:
         return neighbourhood
 
     def get_random_neighbour(self):
-        return random.choice(self.get_neighbourhood())
+        return random.choice(self.get_neighbourhood(5))

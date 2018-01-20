@@ -8,10 +8,20 @@ from Model import HighwaySystem
 from Model import Point
 from Model import Segment
 from Metaheuristics import VNS
+from Metaheuristics import SimulatedAnnealing
+
+def plot_highway(highways, style):
+    prev = highways[-1]
+    for elem in highways:
+        if elem.connection == False:
+            prev = elem
+            continue
+
+        plt.plot([prev.point.x, elem.point.x], [prev.point.y, elem.point.y], style)
+        prev = elem
 
 parser = argparse.ArgumentParser(description='Program finding highway system for given cities with usage of metaheuristics')
 parser.add_argument('-f', '--file', help='File with list of cities')
-parser.add_argument('-g', '--graphical', action='store_true', help='Show calculations with graphical indicators.')
 parser.add_argument('-a', '--algorithm', choices=['vns', 'simulated_annealing'], help='Choose metaheuristics from provided: "vns" or "simulated_annealing"')
 
 args = parser.parse_args()
@@ -25,34 +35,26 @@ for line in data_file:
 
 data_file.close()
 print(cities)
+for city in cities:
+    plt.plot(city.x, city.y, 'ro')
+
 
 hs = HighwaySystem(cities)
 hs.create_random_highway()
 
-prev = hs.highways[-1]
-for elem in hs.highways:
-    if elem.connection == False:
-        prev = elem
-        continue
+plot_highway(hs.highways, 'b-')
 
-    plt.plot([prev.point.x, elem.point.x], [prev.point.y, elem.point.y], 'b-')
-    prev = elem
+if args.algorithm == 'vns':
+    vns = VNS(hs, 20)
+    vns.run()
+    print('result: ' + str(vns.highway_system.highways))
+    plot_highway(vns.highway_system.highways, 'g-')
 
-vns = VNS(hs, 5)
-vns.run()
-print('result: ' + str(vns.highway_system.highways))
-
-for city in cities:
-    plt.plot(city.x, city.y, 'ro')
-
-prev = vns.highway_system.highways[-1]
-for elem in vns.highway_system.highways:
-    if elem.connection == False:
-        prev = elem
-        continue
-
-    plt.plot([prev.point.x, elem.point.x], [prev.point.y, elem.point.y], 'g-')
-    prev = elem
+else:
+    sa = SimulatedAnnealing(hs)
+    sa.run()
+    print('result: ' + str(sa.highway_system.highways))
+    plot_highway(sa.highway_system.highways, 'g-')
 
 plt.axis([-100, 100, -100, 100])
 plt.show()

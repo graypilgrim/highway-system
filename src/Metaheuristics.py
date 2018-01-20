@@ -6,22 +6,27 @@ import sys
 
 
 class SimulatedAnnealing:
-    def __init__(self, cities):
-        solution_x = HighwaySystem(cities)  # random init state
-        temperature = 1.0
-        k = 0.995
+    def __init__(self, highway_system):
+        self.highway_system = highway_system
+        self.temperature = 1.0
+        self.coefficient = 0.995
 
-        while temperature > 0.001:
-            solution_y = solution_x.get_random_neighbour()
-            solution_x_quality = HighwaySystem.quality(solution_x)
-            solution_y_quality =  HighwaySystem.quality(solution_y)
-            tolerance = self.tolerance(solution_x_quality, solution_y_quality, temperature)
 
-            if solution_y_quality < solution_x_quality or random.random() < tolerance:
-                solution_x = solution_y
-            temperature = k*temperature
+    def run(self):
+        while self.temperature > 0.001:
+            quality = self.highway_system.quality()
+            temp_highway_system = self.highway_system.get_random_neighbour()
+            temp_quality = temp_highway_system.quality()
+            tolerance = self.tolerance(quality, temp_quality, self.temperature)
 
-        self.result = solution_x
+            print('current: ' + str(quality))
+            print('best neighbour: ' + str(temp_quality))
+
+            if temp_quality < quality or random.random() < tolerance:
+                self.highway_system = temp_highway_system
+
+            self.temperature = self.coefficient*self.temperature
+            print('temp: ' + str(self.temperature))
 
     def get_result(self):
         return self.result
@@ -32,7 +37,6 @@ class SimulatedAnnealing:
             return 0
         else:
             return math.exp(-math.fabs(solution_y_quality - solution_x_quality) / temperature)
-
 
 class VNS:
     def __init__(self, highway_system, max_neighbourhood_radius):
@@ -47,12 +51,9 @@ class VNS:
                 neighbours = self.highway_system.get_neighbourhood(radius)
                 best_neighbour = self.choose_best_neighbour(neighbours)
 
-                # print('current: ' + str(self.highway_system.highways))
                 print('current: ' + str(self.highway_system.quality()))
                 print('best neighbour: ' + str(best_neighbour.quality()))
-                # print('best neighbour: ' + str(best_neighbour.highways))
                 print('radius: ' + str(radius))
-                # print('')
 
                 if best_neighbour.quality() < self.highway_system.quality():
                     self.highway_system = best_neighbour
