@@ -4,20 +4,21 @@ from Model import HighwaySystem
 
 
 class SimulatedAnnealing:
-    def __init__(self, cities, temperature, iterations):
-        self.temperature = temperature
-        self.iterations = iterations
-
+    def __init__(self, cities):
         solution_x = HighwaySystem(cities)  # random init state
-        iteration = 0
-        while iteration < iterations:
-            solution_y = solution_x.get_neighbour()
+        temperature = 1.0
+        k = 0.995
+
+        while temperature > 0.001:
+            solution_y = HighwaySystem.get_random_neighbour(solution_x)
             solution_x_quality = HighwaySystem.quality(solution_x)
             solution_y_quality = HighwaySystem.quality(solution_y)
             tolerance = self.tolerance(solution_x_quality, solution_y_quality, temperature)
+
             if solution_y_quality < solution_x_quality or random.random() < tolerance:
                 solution_x = solution_y
-            iteration += 1
+            temperature = k*temperature
+
         self.result = solution_x
 
     def get_result(self):
