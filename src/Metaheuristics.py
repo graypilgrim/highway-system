@@ -10,9 +10,9 @@ class SimulatedAnnealing:
         k = 0.995
 
         while temperature > 0.001:
-            solution_y = HighwaySystem.get_random_neighbour(solution_x)
+            solution_y = solution_x.get_random_neighbour()
             solution_x_quality = HighwaySystem.quality(solution_x)
-            solution_y_quality = HighwaySystem.quality(solution_y)
+            solution_y_quality =  HighwaySystem.quality(solution_y)
             tolerance = self.tolerance(solution_x_quality, solution_y_quality, temperature)
 
             if solution_y_quality < solution_x_quality or random.random() < tolerance:
@@ -30,3 +30,25 @@ class SimulatedAnnealing:
             return 0
         else:
             return math.exp(-math.fabs(solution_y_quality - solution_x_quality) / temperature)
+
+
+class VNS:
+
+    def _init_(self, cities, K):
+        solution_x = HighwaySystem(cities)  # random init state
+        solution_x = solution_x.get_best_neighbour()
+        while True:
+            k = 1
+            while True:
+                solution_y = solution_x.get_neighbourhood(k)
+                best_solution_y = solution_y.get_best_neighbour()
+                k = k + 1
+                if HighwaySystem.quality(best_solution_y) > HighwaySystem.quality(solution_x) or k > K:
+                    break
+                solution_x = best_solution_y
+            self.result = solution_x
+            break
+
+    def get_result(self):
+        return self.result
+

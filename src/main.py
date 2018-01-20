@@ -4,6 +4,7 @@ import argparse
 from Model import HighwaySystem
 from Model import Point
 from Model import Segment
+from Metaheuristics import SimulatedAnnealing
 
 parser = argparse.ArgumentParser(description='Program finding highway system for given cities with usage of metaheuristics')
 parser.add_argument('-f', '--file', help='File with list of cities')
@@ -32,3 +33,7 @@ slip_roads = hs.calculate_slip_roads_len()
 print('slip_roads: ' + str([i for i in slip_roads]))
 
 hs.is_valid()
+
+sa = SimulatedAnnealing(cities)
+print(sa.get_result)
+

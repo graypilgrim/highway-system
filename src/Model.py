@@ -163,40 +163,44 @@ class HighwaySystem:
 
         return False
 
-    def quality(self, highways):
-        result = highways.calculate_highways_len + 2^highways.calculate_slip_roads_len - 1
+    def quality(highways):
+        slip_roads = highways.calculate_slip_roads_len()
+        slip_roads_value = 0
+        for i in slip_roads:
+            slip_roads_value = slip_roads_value + 2^int(i in slip_roads)
+        result = highways.calculate_highways_len() + slip_roads_value - 1
         return result
 
-    def get_neighbourhood(self, highways):
+    def get_neighbourhood(self):
         neighbourhood = []
-        for vertex in highways:
-            less_x = highways[vertex].point.x - 1
-            highways_less_x = copy(highways)
-            highways_less_x[vertex].point.x = less_x
+        for vertex in range(len(self.highways)):
+            less_x = self.highways[vertex].point.x - 1
+            highways_less_x = copy(self.highways)
+            highways_less_x[vertex].point = highways_less_x[vertex].point._replace(x=less_x)
             neighbourhood.append(highways_less_x)
 
-            more_x = highways[vertex].point.x + 1
-            highways_more_x = copy(highways)
-            highways_more_x[vertex].point.x = more_x
+            more_x = self.highways[vertex].point.x + 1
+            highways_more_x = copy(self.highways)
+            highways_more_x[vertex].point = highways_more_x[vertex].point._replace(x=more_x)
             neighbourhood.append(highways_more_x)
 
-            less_y = highways[vertex].point.y - 1
-            highways_less_y = copy(highways)
-            highways_less_y[vertex].point.y = less_y
+            less_y = self.highways[vertex].point.y - 1
+            highways_less_y = copy(self.highways)
+            highways_less_y[vertex].point = highways_less_y[vertex].point._replace(y=less_y)
             neighbourhood.append(highways_less_y)
 
-            more_y = highways[vertex].point.y + 1
-            highways_more_y = copy(highways)
-            highways_more_y[vertex].point.y = more_y
+            more_y = self.highways[vertex].point.y + 1
+            highways_more_y = copy(self.highways)
+            highways_more_y[vertex].point = highways_more_y[vertex].point._replace(y=more_y)
             neighbourhood.append(highways_more_y)
 
-            connection_changed = not highways[vertex].connection
-            highways_connection = copy(highways)
-            highways_connection[vertex].connection = connection_changed
+            connection_changed = not self.highways[vertex].connection
+            highways_connection = copy(self.highways)
+            highways_connection[vertex] = highways_less_x[vertex]._replace(connection=connection_changed)
             neighbourhood.append(highways_connection)
 
         return neighbourhood
 
-    def get_random_neighbour(self, highways):
-        return random.choice(self.get_neighbourhood(highways))
+    def get_random_neighbour(self):
+        return random.choice(self.get_neighbourhood())
 
