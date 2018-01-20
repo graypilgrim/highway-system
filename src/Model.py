@@ -19,37 +19,14 @@ class Vertex(NamedTuple):
     point: Point
     connection: bool
 
-
-class BoundingRectangle:
-    def __init__(self):
-        self.top_right = [-sys.maxsize-1, -sys.maxsize-1]
-        self.bottom_left = [sys.maxsize, sys.maxsize]
-
-    def is_in(self, segment):
-        if segment.a.x > self.top_right[0] or segment.a.x < self.bottom_left[0] and segment.b.x > self.top_right[0] or segment.b.x < self.bottom_left[0]:
-            return False
-
-        if segment.a.y > self.top_right[1] or segment.a.y < self.bottom_left[1] and segment.b.y > self.top_right[1] or segment.b.y < self.bottom_left[1]:
-            return False
-
-        return True
-
-    def add(self, segment):
-        self.top_right[0] = max(self.top_right[0], segment.a.x)
-        self.top_right[0] = max(self.top_right[0], segment.b.x)
-        self.top_right[1] = max(self.top_right[1], segment.a.x)
-        self.top_right[1] = max(self.top_right[1], segment.b.x)
-
-        self.bottom_left[0] = min(self.bottom_left[0], segment.a.x)
-        self.bottom_left[0] = min(self.bottom_left[0], segment.b.x)
-        self.bottom_left[1] = min(self.bottom_left[1], segment.a.x)
-        self.bottom_left[1] = min(self.bottom_left[1], segment.b.x)
-
-
 class HighwaySystem:
-    def __init__(self, cities):
+    def __init__(self, cities, highways=list()):
         self.cities = cities
-        self.highways = [Vertex(Point(x=random.randint(-100, 100), y=random.randint(-100, 100)), bool(random.getrandbits(1))) for i in range(len(cities))]
+        self.highways = highways
+
+
+    def create_random_highway(self):
+        self.highways = [Vertex(Point(x=random.randint(-100, 100), y=random.randint(-100, 100)), True) for i in range(len(self.cities))]
 
     def calculate_highways_len(self):
         res = 0.0
@@ -77,7 +54,9 @@ class HighwaySystem:
 
                 distance = self.point_to_segment_distance(Segment(prev.point, elem.point), city)
                 res = min(distance, res)
+                prev = elem
 
+            print('slip road len: ' + str(res))
             yield res
 
     def point_to_point_distance(self, point_a, point_b):
@@ -121,9 +100,9 @@ class HighwaySystem:
         return self.point_to_point_distance(Point(point_image_x, point_image_y), point)
 
     def is_valid(self):
-        rect = BoundingRectangle()
         prev = self.highways[-1]
         segments = set()
+        first = True
         for elem in self.highways:
             if elem.connection == False:
                 prev = elem
@@ -131,20 +110,18 @@ class HighwaySystem:
 
             segment = Segment(Point(prev.point.x, prev.point.y), Point(elem.point.x, elem.point.y))
 
-            if not rect.is_in(segment):
+            if not first and not self.is_intersection(segments, segment):
+                print('false')
+                first = False
                 return False
 
-            if not self.is_intersection(segments, segment):
-                return False
-
+            print('true')
             segments.add(segment)
-            rect.add(segment)
 
         return True
 
     def is_intersection(self, segments, segment):
         for seg in segments:
-
             if seg.a.x == seg.b.x:
                 if segment.a.x <= seg.a.x and segment.b.x >= seg.a.x or segment.a.x > seg.a.x and segment.b.x < seg.a.x:
                     return True
@@ -163,44 +140,52 @@ class HighwaySystem:
 
         return False
 
-    def quality(highways):
-        slip_roads = highways.calculate_slip_roads_len()
+    def quality(self):
+        slip_roads = self.calculate_slip_roads_len()
         slip_roads_value = 0
         for i in slip_roads:
-            slip_roads_value = slip_roads_value + 2^int(i in slip_roads)
-        result = highways.calculate_highways_len() + slip_roads_value - 1
+            slip_roads_value = slip_roads_value + 2**i + 1
+        result = self.calculate_highways_len() + slip_roads_value - 1
         return result
 
-    def get_neighbourhood(self):
-        neighbourhood = []
-        for vertex in range(len(self.highways)):
-            less_x = self.highways[vertex].point.x - 1
-            highways_less_x = copy(self.highways)
-            highways_less_x[vertex].point = highways_less_x[vertex].point._replace(x=less_x)
-            neighbourhood.append(highways_less_x)
+    def get_neighbourhood(self, radius):
+        neighbourhood = list()
+        for i in range(len(self.highways)):
+            x = self.highways[i].point.x
+            y = self.highways[i].point.y
+            c = self.highways[i].connection
 
-            more_x = self.highways[vertex].point.x + 1
-            highways_more_x = copy(self.highways)
-            highways_more_x[vertex].point = highways_more_x[vertex].point._replace(x=more_x)
-            neighbourhood.append(highways_more_x)
+            neighbour = list(self.highways)
+            neighbour[i] = Vertex(Point(x + 1, y), c)
+            hs = HighwaySystem(self.cities, neighbour)
+            if (hs.is_valid()):
+                neighbourhood.append(hs)
 
-            less_y = self.highways[vertex].point.y - 1
-            highways_less_y = copy(self.highways)
-            highways_less_y[vertex].point = highways_less_y[vertex].point._replace(y=less_y)
-            neighbourhood.append(highways_less_y)
+            neighbour = list(self.highways)
+            neighbour[i] = Vertex(Point(x - 1, y), c)
+            hs = HighwaySystem(self.cities, neighbour)
+            if (hs.is_valid()):
+                neighbourhood.append(hs)
 
-            more_y = self.highways[vertex].point.y + 1
-            highways_more_y = copy(self.highways)
-            highways_more_y[vertex].point = highways_more_y[vertex].point._replace(y=more_y)
-            neighbourhood.append(highways_more_y)
+            neighbour = list(self.highways)
+            neighbour[i] = Vertex(Point(x, y + 1), c)
+            hs = HighwaySystem(self.cities, neighbour)
+            if (hs.is_valid()):
+                neighbourhood.append(hs)
 
-            connection_changed = not self.highways[vertex].connection
-            highways_connection = copy(self.highways)
-            highways_connection[vertex] = highways_less_x[vertex]._replace(connection=connection_changed)
-            neighbourhood.append(highways_connection)
+            neighbour = list(self.highways)
+            neighbour[i] = Vertex(Point(x, y - 1), c)
+            hs = HighwaySystem(self.cities, neighbour)
+            if (hs.is_valid()):
+                neighbourhood.append(hs)
+
+            neighbour = list(self.highways)
+            neighbour[i] = Vertex(Point(x, y), not c)
+            hs = HighwaySystem(self.cities, neighbour)
+            if (hs.is_valid()):
+                neighbourhood.append(hs)
 
         return neighbourhood
 
     def get_random_neighbour(self):
         return random.choice(self.get_neighbourhood())
-

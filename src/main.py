@@ -1,10 +1,13 @@
 #!/bin/python
 
 import argparse
+import matplotlib.pyplot as plt
+import numpy as np
+
 from Model import HighwaySystem
 from Model import Point
 from Model import Segment
-from Metaheuristics import SimulatedAnnealing
+from Metaheuristics import VNS
 
 parser = argparse.ArgumentParser(description='Program finding highway system for given cities with usage of metaheuristics')
 parser.add_argument('-f', '--file', help='File with list of cities')
@@ -24,16 +27,32 @@ data_file.close()
 print(cities)
 
 hs = HighwaySystem(cities)
-print(hs.highways)
+hs.create_random_highway()
 
-length = hs.calculate_highways_len()
-print('final length: ' + str(length))
+prev = hs.highways[-1]
+for elem in hs.highways:
+    if elem.connection == False:
+        prev = elem
+        continue
 
-slip_roads = hs.calculate_slip_roads_len()
-print('slip_roads: ' + str([i for i in slip_roads]))
+    plt.plot([prev.point.x, elem.point.x], [prev.point.y, elem.point.y], 'b-')
+    prev = elem
 
-hs.is_valid()
+vns = VNS(hs, 5)
+vns.run()
+print('result: ' + str(vns.highway_system.highways))
 
-sa = SimulatedAnnealing(cities)
-print(sa.get_result)
+for city in cities:
+    plt.plot(city.x, city.y, 'ro')
 
+prev = vns.highway_system.highways[-1]
+for elem in vns.highway_system.highways:
+    if elem.connection == False:
+        prev = elem
+        continue
+
+    plt.plot([prev.point.x, elem.point.x], [prev.point.y, elem.point.y], 'g-')
+    prev = elem
+
+plt.axis([-100, 100, -100, 100])
+plt.show()
