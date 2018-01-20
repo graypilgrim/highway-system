@@ -1,5 +1,6 @@
 import random
 from math import sqrt
+from copy import copy
 from typing import NamedTuple
 import sys
 
@@ -162,6 +163,40 @@ class HighwaySystem:
 
         return False
 
-    def quality(self, calculate_highways_len, calculate_slip_roads_len):
-        result = calculate_highways_len + 2^calculate_slip_roads_len - 1
+    def quality(self, highways):
+        result = highways.calculate_highways_len + 2^highways.calculate_slip_roads_len - 1
         return result
+
+    def get_neighbourhood(self, highways):
+        neighbourhood = []
+        for vertex in highways:
+            less_x = highways[vertex].point.x - 1
+            highways_less_x = copy(highways)
+            highways_less_x[vertex].point.x = less_x
+            neighbourhood.append(highways_less_x)
+
+            more_x = highways[vertex].point.x + 1
+            highways_more_x = copy(highways)
+            highways_more_x[vertex].point.x = more_x
+            neighbourhood.append(highways_more_x)
+
+            less_y = highways[vertex].point.y - 1
+            highways_less_y = copy(highways)
+            highways_less_y[vertex].point.y = less_y
+            neighbourhood.append(highways_less_y)
+
+            more_y = highways[vertex].point.y + 1
+            highways_more_y = copy(highways)
+            highways_more_y[vertex].point.y = more_y
+            neighbourhood.append(highways_more_y)
+
+            connection_changed = not highways[vertex].connection
+            highways_connection = copy(highways)
+            highways_connection[vertex].connection = connection_changed
+            neighbourhood.append(highways_connection)
+
+        return neighbourhood
+
+    def get_random_neighbour(self, highways):
+        return random.choice(self.get_neighbourhood(highways))
+
